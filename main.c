@@ -109,6 +109,8 @@ void program(){
 int eval(){
     int op,*tmp;
     while(1){
+        op=*pc++;
+
         if(op==IMM)     {ax=*pc++;}
         else if(op==LC) {ax=*(char*)ax;}
         else if(op==LI) {ax=*(int*)ax;}
@@ -162,7 +164,7 @@ int eval(){
         else if (op == MOD) ax = *sp++ % ax;
 
         //builtin
-        else if (op == EXIT) { printf("exit(%d)", *sp); return *sp; }
+        else if (op == EXIT) { printf("exit(%d)\n", *sp); return *sp; }
         else if (op == OPEN) { ax = open((char *)sp[1], sp[0]);  }
         else if (op == CLOS) { ax = close(*sp); }
         else if (op == READ) { ax = read(sp[2], (char *)sp[1], *sp);  }
