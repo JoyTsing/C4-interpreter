@@ -27,6 +27,9 @@ int token_val;  //current token
 int *current_id,//current parsed ID
     *symbols;   //symbol table
 
+int basetype;   //type of a global_declaration
+int expr_type;  //type of an expression
+
 enum{Token,Hash,Name,Type,Class,Value,BType,BClass,BValue,IdSize};
 
 /*
@@ -63,6 +66,36 @@ enum{
     OPEN,READ,CLOS,PRTF,MALC,MSET,MCMP,EXIT,RET
 };
 
+//type of variable/function
+enum{
+    CHAR,INT,PTR
+};
+
+
+/**
+ program ::= {global_declaration}+
+
+ global_declaration ::= enum_decl | variable_decl | function_decl
+
+ enum_decl ::= 'enum' [id] '{' id ['=' 'num'] {',' id ['=' 'num'] '}'
+
+ variable_decl ::= type {'*'} id { ',' {'*'} id  } ';'
+
+ function_decl ::= type {'*'} id '(' parameter_decl ')' '{' body_decl '}'
+
+ parameter_decl ::= type {'*'} id {',' type {'*'} id}
+
+ body_decl ::= {variable_decl}, {statement}
+
+ statement ::= non_empty_statement | empty_statement
+
+ non_empty_statement ::= if_statement | while_statement | '{' statement '}'
+                      | 'return' expression | expression ';'
+
+ if_statement ::= 'if' '(' expression ')' statement ['else' non_empty_statement]
+
+ while_statement ::= 'while' '(' expression ')' non_empty_statement}'}'
+ */
 //词法分析的标记
 enum{
     Num = 128, Fun, Sys, Glo, Loc, Id,
@@ -270,17 +303,125 @@ void next(){
     return;
 }
 
+
 //解析表达式
 void expression(int level){
 
+}
+
+void match(int tk){
+    if(token==tk){
+        next();
+    }else{
+        printf("%d: expected token: %d\n",line,tk);
+        exit(-1);
+    }
+}
+
+void enum_declartion(){
+    //enum [id] {a=1,b=3};
+    int i;
+    i=0;
+    while(token!='}'){
+        if(token!=Id){
+            printf("%d: bad enum identifier %d\n",line,token);
+            exit(-1);
+        }
+        next();
+        if(token==Assign){
+            next();
+            if(token!=Num){
+                printf("%d: bad enum initializer\n",line);
+                exit(-1);
+            }
+            i=token_val;
+            next();
+        }
+
+        current_id[Class]=Num;
+        current_id[Type]=INT;
+        current_id[Value]=i++;
+
+        if(token==','){
+            next();
+        }
+    }
+}
+
+void global_declaration(){
+
+// global_declaration ::= enum_decl | variable_decl | function_decl
+//
+// enum_decl ::= 'enum' [id] '{' id ['=' 'num'] {',' id ['=' 'num'} '}']}'}'
+//
+// variable_decl ::= type {'*'} id { ',' {'*'} id  } ';'
+//
+// function_decl ::= type {'*'} id '(' parameter_decl ')' '{' body_decl '}'
+    int type;
+    int i;
+
+    basetype=INT;
+
+    if(token==Enum){
+        match(Enum);
+        if(token!='{'){
+            match(Id);
+        }else{
+            match('{');
+            enum_declartion();
+            match('}');
+        }
+        match(';');
+        return;
+    }
+
+    if(token==Int){
+        match(Int);
+    }else if(token==Char){
+        match(Char);
+        basetype=CHAR;
+    }
+
+    //逗号分割变量
+    while(token!=';'&&token!='}'){
+        type=basetype;
+        //pointer type. int ********x
+        while(token==Mul){
+            match(Mul);
+            type=type+PTR;
+        }
+        if(token!=Id){
+            printf("%d: bad global declartion\n",line);
+            exit(-1);
+        }
+        if(current_id[Class]){
+            printf("%d: duplicate global declartion\n",line);
+            exit(-1);
+        }
+        match(Id);
+        current_id[Type]=type;
+
+        if(token=='('){
+            current_id[Class]=Fun;
+            current_id[Value]=(int)(text+1);
+            function_declartion();
+        }else{
+            current_id[Class]=Glo;
+            current_id[Value]=(int)data;
+            data=data+sizeof(int);
+        }
+
+        if(token==','){
+            match(',');
+        }
+    }
+    next();
 }
 
 //词法分析的入口
 void program(){
     next();
     while(token>0){
-        printf("token is :%c\n",token);
-        next();
     }
 }
 
