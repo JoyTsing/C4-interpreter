@@ -1,0 +1,29 @@
+
+void global_declaration(){
+
+// global_declaration ::= enum_decl | variable_decl | function_decl
+//
+// enum_decl ::= 'enum' [id] '{' id ['=' 'num'] {',' id ['=' 'num'} '}']}'}'
+//
+// variable_decl ::= type {'*'} id { ',' {'*'} id  } ';'
+//
+// function_decl ::= type {'*'} id '(' parameter_decl ')' '{' body_decl '}'
+    int type;
+    int i;
+
+    basetype=INT;
+}
+void global_declaration(){
+
+// global_declaration ::= enum_decl | variable_decl | function_decl
+//
+// enum_decl ::= 'enum' [id] '{' id ['=' 'num'] {',' id ['=' 'num'} '}']}'}'
+//
+// variable_decl ::= type {'*'} id { ',' {'*'} id  } ';'
+//
+// function_decl ::= type {'*'} id '(' parameter_decl ')' '{' body_decl '}'
+    int type;
+    int i;
+
+    basetype=INT;
+}
