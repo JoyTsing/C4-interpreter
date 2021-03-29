@@ -1098,6 +1098,18 @@ int eval(){
     while(1){
         op=*pc++;
         cycle++;
+
+        if(debug){
+            printf("%d> %.4s", cycle,
+                    & "LEA ,IMM ,JMP ,CALL,JZ  ,JNZ ,ENT ,ADJ ,LEV ,LI  ,LC  ,SI  ,SC  ,PUSH,"
+                    "OR  ,XOR ,AND ,EQ  ,NE  ,LT  ,GT  ,LE  ,GE  ,SHL ,SHR ,ADD ,SUB ,MUL ,DIV ,MOD ,"
+                    "OPEN,READ,CLOS,PRTF,MALC,MSET,MCMP,EXIT"[op * 5]);
+            if (op <= ADJ)
+                printf(" %d\n", *pc);
+            else
+                printf("\n");
+        }
+
         //assem_int(op);
         if(op==IMM)     {ax=*pc++;}
         else if(op==LC) {ax=*(char*)ax;}
@@ -1176,6 +1188,24 @@ int main(int argc,char **argv){
 
     argc--;
     argv++;
+
+    if(argc>0&&**argv=='-'&&(*argv)[1]=='s'){
+        assembly = 1;
+        --argc;
+        ++argv;
+    }
+
+    if (argc > 0 && **argv == '-' && (*argv)[1] == 'd') {
+        debug = 1;
+        --argc;
+        ++argv;
+    }
+
+    if (argc < 1) {
+        printf("usage: main [-s] [-d] file ...\n");
+        return 0;
+    }
+
     poolsize=256*1024;
 
     line=1;
@@ -1250,6 +1280,9 @@ int main(int argc,char **argv){
         printf("main() not defined\n");
         return -1;
     }
+
+    if (assembly)
+        return 0;
 
     sp=(int*)((int)stack+poolsize);
     *--sp=EXIT;
