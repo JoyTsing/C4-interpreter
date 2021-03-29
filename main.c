@@ -67,7 +67,7 @@ enum{
     OR  ,XOR ,AND ,
     EQ  ,NE  ,LT  ,GT  ,LE  ,GE,
     SHL ,SHR ,ADD ,SUB ,MUL ,DIV ,MOD ,
-    OPEN,READ,CLOS,PRTF,MALC,MSET,MCMP,EXIT,RET
+    OPEN,READ,CLOS,PRTF,MALC,MSET,MCMP,EXIT
 };
 
 //type of variable/function
@@ -75,6 +75,9 @@ enum{
     CHAR,INT,PTR
 };
 
+enum{
+    Global,Local
+};
 
 //
 // program ::= {global_declaration}+
@@ -120,7 +123,6 @@ enum{
 //    int Bvalue;
 //};
 
-//用于词法分析，获取下一个标记
 void next(){
     char *last_pos;
     int hash;
@@ -788,7 +790,7 @@ void statement(){
             //jmp
             *b=(int)(text+3);
             *++text=JMP;
-            b=text++;
+            b=++text;//IF判断应该先移动栈
 
             statement();
         }
@@ -1096,7 +1098,7 @@ int eval(){
     while(1){
         op=*pc++;
         cycle++;
-
+        //assem_int(op);
         if(op==IMM)     {ax=*pc++;}
         else if(op==LC) {ax=*(char*)ax;}
         else if(op==LI) {ax=*(int*)ax;}
@@ -1109,7 +1111,7 @@ int eval(){
         //CALL跳到地址为<addr>的子函数，RET用来返回
         //这里是一个子过程
         else if(op==CALL){*--sp=(int)(pc+1);pc=(int*)*pc;}
-        else if(op==RET){pc=(int*)*sp++;}//可以用LEV代替
+        //else if(op==RET){pc=(int*)*sp++;}//可以用LEV代替
         //ENT用实现函数调用前保存的功能,并预留局部变量的位置
         //
         // 对应汇编的
@@ -1162,6 +1164,7 @@ int eval(){
             printf("unknown instruction:%d\n",op);
             return -1;
         }
+
     }
     return 0;
 }
@@ -1182,22 +1185,22 @@ int main(int argc,char **argv){
         return -1;
     }
 
-    if(!(text=old_text=(int*)malloc(poolsize))){
+    if(!(text=malloc(poolsize))){
         printf("could not malloc(%d) for text area\n",poolsize);
         return -1;
     }
 
-    if(!(data=(char*)malloc(poolsize))){
+    if(!(data=malloc(poolsize))){
         printf("could not malloc(%d) for data area\n",poolsize);
         return -1;
     }
 
-    if(!(stack=(int*)malloc(poolsize))){
+    if(!(stack=malloc(poolsize))){
         printf("could not malloc(%d) for stack area\n",poolsize);
         return -1;
     }
 
-    if(!(symbols=(int*)malloc(poolsize))){
+    if(!(symbols=malloc(poolsize))){
         printf("could not malloc(%d) for symbol table\n",poolsize);
         return -1;
     }
@@ -1227,7 +1230,7 @@ int main(int argc,char **argv){
     next();current_id[Token]=Char;
     next();idmain=current_id;
 
-    if(!(src=old_src=(char*)malloc(poolsize))){
+    if(!(src=old_src=malloc(poolsize))){
         printf("could not malloc(%d) for source area\n",poolsize);
         return -1;
     }

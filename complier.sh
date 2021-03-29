@@ -5,7 +5,7 @@
 #fi
 #filename=$1
 #if [ -f $filename ];then
-    gcc  -o main -m32 main.c
+    gcc  -o main -m32  main.c
     exit 0
 #else
 #    echo "$filename doesn't exists"
